@@ -1,0 +1,74 @@
+[
+  {
+    "id": "celebration-service",
+    "title": "Celebration Service",
+    "description": "Come worship God with us every Sunday and enjoy a wonderful time in God's presence. Ensure you bring someone along with you.",
+    "day": "Every Sunday",
+    "time": "9:00 AM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "church"
+  },
+  {
+    "id": "prayer-counselling",
+    "title": "Prayer & Counselling",
+    "description": "Are you in need of counselling and prayer? Pastor Nick will be available to counsel and pray with you.",
+    "day": "Every Monday",
+    "time": "12:00 PM – 5:00 PM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "hands"
+  },
+  {
+    "id": "school-of-ministry",
+    "title": "School of Ministry",
+    "description": "An interactive class where we come together and study the Word of God. Questions are asked and everyone gets an opportunity to share. Recommended for all members and intending members.",
+    "day": "Every Wednesday",
+    "time": "6:00 PM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "book"
+  },
+  {
+    "id": "winners-hour",
+    "title": "Winners Hour",
+    "description": "Dangerous prayers that provoke victory, praises that move the throne of God, testimonies that celebrate His goodness, and messages from the Word that reveal the mind of God. You do not want to miss this service.",
+    "day": "Every Thursday",
+    "time": "9:00 AM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "trophy"
+  },
+  {
+    "id": "night-of-wonders",
+    "title": "Night of Wonders Extraordinary",
+    "description": "Don't miss our powerful vigil on the first Friday of every month. Come and experience the God of wonders.",
+    "day": "First Friday of Every Month",
+    "time": "10:00 PM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "star"
+  },
+  {
+    "id": "holy-communion",
+    "title": "Holy Communion Service",
+    "description": "Come join us as we partake of Christ. A sacred time of reflection, worship, and fellowship.",
+    "day": "Second Sunday of Every Month",
+    "time": "8:00 AM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "cross"
+  },
+  {
+    "id": "leadership-summit",
+    "title": "Leadership Summit",
+    "description": "Our Sunday School. Don't miss it as we learn at the feet of Jesus and equip ourselves for effective kingdom service.",
+    "day": "Every Sunday",
+    "time": "8:00 AM – 9:00 AM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "users"
+  },
+  {
+    "id": "ffu",
+    "title": "Family Fellowship Unit (FFU)",
+    "description": "Holds immediately after Sunday service for all members. First timers and intending members are included. A time for bonding, discipleship, and community.",
+    "day": "Every Sunday",
+    "time": "12:00 PM – 2:00 PM",
+    "location": "26/28 Adewunmi Abudu Street, Ajao Estate",
+    "icon": "heart"
+  }
+]

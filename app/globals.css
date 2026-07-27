@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-barlow: 'Barlow', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter);
+  background-color: #0D0D0D;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Utility classes ─────────────────────────── */
+@layer components {
+  .label {
+    @apply text-accent text-xs font-semibold uppercase tracking-widest;
+  }
+
+  .display-headline {
+    font-family: var(--font-barlow);
+    @apply font-extrabold leading-tight text-white;
+  }
+
+  .section-divider {
+    @apply border-t border-white/10;
+  }
+
+  .btn-outline-white {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-3.5 border border-white text-white text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-white hover:text-dark transition-all duration-200;
+  }
+
+  .btn-filled {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-accent text-white text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-accent-dark transition-all duration-200;
+  }
+
+  .icon-circle {
+    @apply w-14 h-14 rounded-full border border-white/40 flex items-center justify-center text-white hover:border-white hover:bg-white/10 transition-all duration-200 cursor-pointer;
+  }
+}
+
+/* ── Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0D0D0D;
+}
+::-webkit-scrollbar-thumb {
+  background: #3B0D0D;
+  border-radius: 2px;
+}

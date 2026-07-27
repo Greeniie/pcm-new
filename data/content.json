@@ -1,0 +1,96 @@
+
+
+{
+   "hero": {
+    "headline": "Experience Extra-Ordinary Grace",
+    "subheadline": "Raising multi-cultural people with the extraordinary grace of prosperity of the spirit, soul and body and for the expansion of God's Kingdom.",
+    "ctaPrimary": { "label": "About PCM", "href": "/about" },
+    "ctaSecondary": { "label": "Give", "href": "/give" },
+    "slides": [
+      {
+        "headline": "Experience Extra-Ordinary Grace",
+        "ctaPrimary": { "label": "About PCM", "href": "/about" },
+        "ctaSecondary": { "label": "Give", "href": "/give" },
+        "image": "/images/banner1.jpg"
+      },
+      {
+        "headline": "Wrap Yourself In Worship & The Word",
+        "ctaPrimary": { "label": "Join Us", "href": "/connect" },
+        "ctaSecondary": { "label": "Contact", "href": "/contact" },
+        "image": "/images/banner2.jpg"
+      },
+      {
+        "headline": "Welcome To The Canaanland",
+        "ctaPrimary": { "label": "Our Services", "href": "/services" },
+        "ctaSecondary": { "label": "Listen to Messages", "href": "/sermons" },
+        "image": "/images/banner3.jpg"
+      }
+    ]
+  },
+   "about": {
+    "headline": "Become A Part of Our Family",
+    "tagline": "A community built on faith, love, and the Word of God.",
+    "description": "Raising multi-cultural people with the extra-ordinary grace of prosperity of the spirit, soul and body and for the expansion of God's Kingdom.",
+    "vision": "To raise multi-cultural people with the extraordinary grace of prosperity of the spirit, soul and body, for the expansion of God's Kingdom.",
+    "mission": "We are committed to preaching the undiluted Gospel of Jesus Christ, making disciples, and demonstrating the power of the Holy Spirit to our generation and beyond.",
+    "pastor": {
+      "name": "Pastor Nick Medo-Uwa",
+      "wife": "Pastor (Mrs.) Ebere Medo-Uwa",
+      "title": "Senior Pastor",
+      "image": "/images/hero-bg-3006.jpg",
+      "bio": "Pastor Nick Medo-Uwa leads PCM with a heart for God's people and a passion for the Word. Together with his wife, Pastor (Mrs.) Ebere Medo-Uwa, they lead a vibrant community of believers committed to prayer, worship, and kingdom impact."
+    }
+  },
+  "sermons": {
+    "headline": "Shape Your Life with God's Word",
+    "description": "Listen to powerful messages by Pastor Nick Medo-Uwa and other ministers of God.",
+    "youtubeChannel": "https://www.youtube.com/@pcm_ministry",
+    "subscribeNote": "Never miss a message. Subscribe to our YouTube channel."
+  },
+  "testimonies": [
+    {
+      "id": "1",
+      "title": "Miraculous Delivery",
+      "body": "Church praise the Lord! I want to thank God Almighty for His goodness and love towards me. Three months after I got married, I didn't know I was pregnant — I was still seeing blood as usual. On visiting the hospital, the doctor confirmed I was pregnant! During delivery, the baby went up instead of coming down, but after prayer, God intervened and I safely delivered a baby boy to the glory of God!",
+      "author": "Sis. Precious"
+    },
+    {
+      "id": "2",
+      "title": "Our God is a God of Surprises",
+      "body": "In this month of favor, God has indeed favored me. The man of God declared that God was releasing car keys, and to my surprise, I got a car as a birthday gift from my husband! Within six months, God blessed me with two cars. To this great God be all the glory!",
+      "author": "Sis. Stella Emmanuel"
+    },
+    {
+      "id": "3",
+      "title": "Divine Turnaround",
+      "body": "I came to PCM broken and without hope. But through the prayers and the Word of God preached here, God turned my situation around completely. What seemed impossible became possible. I have a testimony that will last a lifetime. Thank you Jesus!",
+      "author": "Bro. Emmanuel"
+    }
+  ],
+  "giving": {
+    "headline": "Support the Work of Ministry",
+    "description": "Your giving fuels the expansion of God's Kingdom. Every seed sown is an act of faith and worship.",
+    "onlineGivingNote": "Online giving is coming soon. In the meantime, you can give directly via bank transfer using the details above.",
+    "banks": [
+      {
+        "bank": "UBA",
+        "accountNumber": "1006178337",
+        "accountName": "Pentecostal Canaanland Mission (Project)"
+      },
+      {
+        "bank": "FCMB",
+        "accountNumber": "3845195011",
+        "accountName": "Pentecostal Canaanland Mission"
+      }
+    ]
+  },
+  "contact": {
+    "address": "26/28 Adewunmi Abudu Street, off Osolo Way, opp Mopson Pharmaceutical, by 7/8 Bus Stop, Ajao Estate, Lagos, Nigeria",
+    "phones": ["08034095657", "08179819916", "08023063895"],
+    "email": "pcanaanland@yahoo.com",
+    "facebook": "https://www.facebook.com/Pcanaanland/",
+    "instagram": "https://www.instagram.com/pcm_ministry/",
+    "youtube": "https://www.youtube.com/@pcm_ministry",
+    "mapsUrl": "https://www.google.com/maps/dir/6.5136621,3.3892904/Pentecostal+Canaanland+Mission+Inc,+Adewunmi+Abudu+Street,+Lagos/@6.523369,3.3325109,13z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x103b8ffec97cef21:0xc6d2c62c04c36dca!2m2!1d3.3313295!2d6.542696"
+  }
+}
