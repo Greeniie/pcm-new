@@ -2,26 +2,32 @@
 
 import AdminShell from "@/components/AdminShell";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Search, X, Loader2, DollarSign, TrendingUp, Users } from "lucide-react";
-import { supabase, type Tither } from "@/lib/supabase";
+import { Plus, Search, X, Loader2, Flame, Trophy, Users, ChevronRight, Trash2 } from "lucide-react";
+import { supabase, type Tither, type TitheRecord } from "@/lib/supabase";
+import Link from "next/link";
 
-const BLANK: Omit<Tither, "id" | "created_at"> = {
-  name: "", email: "", phone: "", amount: 0,
-  date: new Date().toISOString().split("T")[0],
-  payment_method: "bank_transfer", bank: "", reference: "", notes: "",
-};
+// ── Streak helpers ─────────────────────────────────────────────
+function getPrevMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
+}
 
-const PAYMENT_METHODS = [
-  { value: "bank_transfer", label: "Bank Transfer" },
-  { value: "cash",          label: "Cash" },
-  { value: "pos",           label: "POS" },
-  { value: "online",        label: "Online" },
-];
+function calculateStreak(records: TitheRecord[]): number {
+  if (!records.length) return 0;
+  // Derive unique months from exact dates
+  const months = [...new Set(records.map((r) => r.date.slice(0, 7)))].sort().reverse();
+  let streak = 1, cur = months[0];
+  for (let i = 1; i < months.length; i++) {
+    if (months[i] === getPrevMonth(cur)) { streak++; cur = months[i]; }
+    else break;
+  }
+  return streak;
+}
 
+// ── Field — outside parent to prevent focus loss ───────────────
 const inputCls =
   "w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400/30 text-sm text-gray-900";
 
-// Defined OUTSIDE parent to prevent focus loss on keystroke
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -31,24 +37,55 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+// ── Types ──────────────────────────────────────────────────────
+type TitherWithStats = Tither & {
+  streak: number;
+  totalAmount: number;
+  monthsPaid: number;
+  paidThisMonth: boolean;
+};
+
+// ── Page ───────────────────────────────────────────────────────
 export default function AdminTithersPage() {
-  const [tithers, setTithers] = useState<Tither[]>([]);
+  const [tithers, setTithers] = useState<TitherWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [newRecord, setNewRecord] = useState<Omit<Tither, "id" | "created_at">>(BLANK);
+  const [newTither, setNewTither] = useState({
+    name: "", phone: "", department: "", tithe_card_number: "",
+  });
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  useEffect(() => { fetchTithers(); }, []);
+  useEffect(() => { fetchAll(); }, []);
 
-  async function fetchTithers() {
+  async function fetchAll() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tithers")
-      .select("*")
-      .order("date", { ascending: false });
-    if (!error && data) setTithers(data as Tither[]);
+    const [{ data: tData }, { data: rData }] = await Promise.all([
+      supabase.from("tithers").select("*").order("name"),
+      supabase.from("tithe_records").select("*"),
+    ]);
+
+    if (tData && rData) {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const records = rData as TitheRecord[];
+
+      const withStats: TitherWithStats[] = (tData as Tither[])
+        .map((t) => {
+          const myRecords = records.filter((r) => r.tither_id === t.id);
+          return {
+            ...t,
+            streak: calculateStreak(myRecords),
+            totalAmount: myRecords.reduce((s, r) => s + Number(r.amount), 0),
+            monthsPaid: new Set(myRecords.map((r) => r.date.slice(0, 7))).size,
+            paidThisMonth: myRecords.some((r) => r.date.startsWith(currentMonth)),
+          };
+        })
+        // Sort: streak desc, then total amount desc
+        .sort((a, b) => b.streak - a.streak || b.totalAmount - a.totalAmount);
+
+      setTithers(withStats);
+    }
     setLoading(false);
   }
 
@@ -58,73 +95,76 @@ export default function AdminTithersPage() {
   }
 
   async function addTither() {
-    if (!newRecord.name.trim()) return showToast("Name is required.", "error");
-    if (!newRecord.amount || newRecord.amount <= 0) return showToast("Enter a valid amount.", "error");
+    if (!newTither.name.trim()) return showToast("Name is required.", "error");
     setSaving(true);
-    const { data, error } = await supabase.from("tithers").insert(newRecord).select().single();
+    const { error } = await supabase.from("tithers").insert(newTither);
     setSaving(false);
     if (error) return showToast("Error: " + error.message, "error");
-    setTithers([data as Tither, ...tithers]);
-    setIsAdding(false); setNewRecord(BLANK);
-    showToast("Record added.");
+    setIsAdding(false);
+    setNewTither({ name: "", phone: "", department: "", tithe_card_number: "" });
+    showToast("Tither added.");
+    fetchAll();
   }
 
-  async function deleteTither(id: string) {
-    if (!confirm("Delete this record?")) return;
-    const { error } = await supabase.from("tithers").delete().eq("id", id);
-    if (error) return showToast("Error: " + error.message, "error");
-    setTithers(tithers.filter((t) => t.id !== id));
-    showToast("Record deleted.");
-  }
-
-  const filtered = tithers.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()) ||
-    (t.reference ?? "").toLowerCase().includes(search.toLowerCase())
+  const filtered = tithers.filter(
+    (t) =>
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      (t.department ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (t.tithe_card_number ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalAmount = filtered.reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalAllTime = tithers.reduce((s, t) => s + t.totalAmount, 0);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const rankLabel = (i: number) =>
+    i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`;
 
   return (
     <AdminShell>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Tithers & Offerings</h2>
-            <p className="text-sm text-gray-500">Record and track giving</p>
+            <h2 className="text-xl font-bold text-gray-900">Tithers</h2>
+            <p className="text-sm text-gray-500">{tithers.length} members · ranked by streak</p>
           </div>
-          <button onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 transition-colors">
-            <Plus size={16} /> Add Record
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 transition-colors"
+          >
+            <Plus size={16} /> Add Tither
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: "Total Records", value: filtered.length, icon: Users, color: "bg-blue-50 text-blue-600" },
-            { label: "Total Given", value: `₦${totalAmount.toLocaleString()}`, icon: TrendingUp, color: "bg-green-50 text-green-600" },
-            {
-              label: "This Month",
-              value: (() => {
-                const m = new Date().toISOString().slice(0, 7);
-                const sum = tithers.filter(t => t.date.startsWith(m)).reduce((s, t) => s + Number(t.amount), 0);
-                return `₦${sum.toLocaleString()}`;
-              })(),
-              icon: DollarSign,
-              color: "bg-amber-50 text-amber-600",
-            },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
-                <s.icon size={18} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-900">{s.value}</p>
-                <p className="text-xs text-gray-500">{s.label}</p>
-              </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Users size={18} className="text-blue-600" />
             </div>
-          ))}
+            <div>
+              <p className="text-xl font-bold text-gray-900">{tithers.length}</p>
+              <p className="text-xs text-gray-500">Total Tithers</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <Flame size={18} className="text-amber-500" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-900">{tithers[0]?.streak ?? 0}</p>
+              <p className="text-xs text-gray-500">Top Streak</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <Trophy size={18} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-900">₦{totalAllTime.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">All-Time Total</p>
+            </div>
+          </div>
         </div>
 
         {toast && (
@@ -140,53 +180,35 @@ export default function AdminTithersPage() {
         {/* Add form */}
         {isAdding && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-            <h3 className="font-bold text-gray-900">New Giving Record</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <h3 className="font-bold text-gray-900">New Tither</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Full Name *">
-                <input className={inputCls} value={newRecord.name}
-                  onChange={(e) => setNewRecord({ ...newRecord, name: e.target.value })} placeholder="e.g. Sis. Grace Abel" />
-              </Field>
-              <Field label="Amount (₦) *">
-                <input type="number" className={inputCls} value={newRecord.amount || ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, amount: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
-              </Field>
-              <Field label="Date">
-                <input type="date" className={inputCls} value={newRecord.date}
-                  onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })} />
-              </Field>
-              <Field label="Payment Method">
-                <select className={inputCls} value={newRecord.payment_method}
-                  onChange={(e) => setNewRecord({ ...newRecord, payment_method: e.target.value })}>
-                  {PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-                </select>
-              </Field>
-              <Field label="Bank">
-                <input className={inputCls} value={newRecord.bank ?? ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, bank: e.target.value })} placeholder="UBA / FCMB" />
-              </Field>
-              <Field label="Transaction Reference">
-                <input className={inputCls} value={newRecord.reference ?? ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, reference: e.target.value })} placeholder="Optional" />
+                <input className={inputCls} value={newTither.name}
+                  onChange={(e) => setNewTither({ ...newTither, name: e.target.value })}
+                  placeholder="e.g. Sis. Grace Abel" />
               </Field>
               <Field label="Phone">
-                <input className={inputCls} value={newRecord.phone ?? ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, phone: e.target.value })} placeholder="Optional" />
+                <input className={inputCls} value={newTither.phone}
+                  onChange={(e) => setNewTither({ ...newTither, phone: e.target.value })}
+                  placeholder="08012345678" />
               </Field>
-              <Field label="Email">
-                <input type="email" className={inputCls} value={newRecord.email ?? ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, email: e.target.value })} placeholder="Optional" />
+              <Field label="Department">
+                <input className={inputCls} value={newTither.department}
+                  onChange={(e) => setNewTither({ ...newTither, department: e.target.value })}
+                  placeholder="e.g. Choir, Ushering" />
               </Field>
-              <Field label="Notes">
-                <input className={inputCls} value={newRecord.notes ?? ""}
-                  onChange={(e) => setNewRecord({ ...newRecord, notes: e.target.value })} placeholder="Optional note" />
+              <Field label="Tithe Card Number">
+                <input className={inputCls} value={newTither.tithe_card_number}
+                  onChange={(e) => setNewTither({ ...newTither, tithe_card_number: e.target.value })}
+                  placeholder="e.g. TC-001" />
               </Field>
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={addTither} disabled={saving}
                 className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 disabled:opacity-60 transition-colors">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Save Record
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Add Tither
               </button>
-              <button onClick={() => { setIsAdding(false); setNewRecord(BLANK); }}
+              <button onClick={() => setIsAdding(false)}
                 className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors">
                 <X size={14} /> Cancel
               </button>
@@ -198,9 +220,11 @@ export default function AdminTithersPage() {
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-            value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or reference…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-400/30 text-gray-900" />
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, department, or card number…"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-400/30 text-gray-900"
+          />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
               <X size={14} />
@@ -208,73 +232,88 @@ export default function AdminTithersPage() {
           )}
         </div>
 
-        {/* Table */}
+        {/* Leaderboard */}
         {loading ? (
           <div className="flex items-center justify-center py-20 text-gray-400">
-            <Loader2 size={24} className="animate-spin mr-2" /> Loading records…
+            <Loader2 size={24} className="animate-spin mr-2" /> Loading…
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
-            <DollarSign size={40} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">{search ? "No matches found." : "No giving records yet. Add the first one above."}</p>
+            <Trophy size={40} className="text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">
+              {search ? "No matches found." : "No tithers yet. Add the first one above."}
+            </p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Method</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Bank / Ref</th>
-                    <th className="px-5 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((t, i) => (
-                    <tr key={t.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${i === filtered.length - 1 ? "border-0" : ""}`}>
-                      <td className="px-5 py-3.5">
-                        <p className="font-semibold text-gray-900">{t.name}</p>
-                        {(t.phone || t.email) && (
-                          <p className="text-xs text-gray-400">{t.phone ?? t.email}</p>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-right font-bold text-gray-900">
-                        ₦{Number(t.amount).toLocaleString()}
-                      </td>
-                      <td className="px-5 py-3.5 text-gray-500">
-                        {new Date(t.date).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full capitalize">
-                          {t.payment_method.replace("_", " ")}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-gray-500 text-xs">
-                        {t.bank && <span>{t.bank}</span>}
-                        {t.bank && t.reference && <span className="text-gray-300 mx-1">·</span>}
-                        {t.reference && <span className="font-mono">{t.reference}</span>}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <button onClick={() => deleteTither(t.id)}
-                          className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-50 border-t border-gray-100">
-                    <td className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{filtered.length} record{filtered.length !== 1 ? "s" : ""}</td>
-                    <td className="px-5 py-3 text-right font-bold text-gray-900">₦{totalAmount.toLocaleString()}</td>
-                    <td colSpan={4}></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+            {filtered.map((t, i) => (
+              <div key={t.id} className="relative group border-b border-gray-50 last:border-0">
+              <Link
+                href={`/admin/tithers/${t.id}`}
+                className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors"
+              >
+                {/* Rank */}
+                <div className="w-8 text-center shrink-0">
+                  {i < 3 ? (
+                    <span className="text-xl leading-none">{rankLabel(i)}</span>
+                  ) : (
+                    <span className="text-sm font-bold text-gray-400">{i + 1}</span>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-gray-900 truncate">{t.name}</p>
+                    {t.paidThisMonth && (
+                      <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-md shrink-0">
+                        ✓ This month
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    {t.department && (
+                      <span className="text-xs text-gray-500">{t.department}</span>
+                    )}
+                    {t.tithe_card_number && (
+                      <span className="text-xs font-mono text-gray-400">{t.tithe_card_number}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Streak */}
+                <div className="shrink-0 text-right">
+                  <div className="flex items-center gap-1 justify-end">
+                    <Flame size={14} className={t.streak > 0 ? "text-amber-500" : "text-gray-300"} />
+                    <span className={`font-bold text-sm ${t.streak > 0 ? "text-amber-600" : "text-gray-400"}`}>
+                      {t.streak}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">{t.streak === 1 ? "month" : "months"}</p>
+                </div>
+
+                {/* Total */}
+                <div className="shrink-0 text-right hidden sm:block">
+                  <p className="font-bold text-sm text-gray-900">₦{t.totalAmount.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">{t.monthsPaid} payment{t.monthsPaid !== 1 ? "s" : ""}</p>
+                </div>
+
+                <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
+              </Link>
+              {/* Delete button sits outside the Link to avoid navigation */}
+              <button
+                onClick={async () => {
+                  if (!confirm(`Delete ${t.name} and all their records?`)) return;
+                  const { error } = await supabase.from("tithers").delete().eq("id", t.id);
+                  if (!error) fetchAll();
+                }}
+                className="absolute right-14 top-1/2 -translate-y-1/2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete tither"
+              >
+                <Trash2 size={14} />
+              </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

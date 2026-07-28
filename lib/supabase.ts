@@ -100,16 +100,22 @@ export async function uploadToStorage(file: File, folder = "uploads"): Promise<s
   return supabase.storage.from("pcm-media").getPublicUrl(data.path).data.publicUrl;
 }
 
+// Tither profile (one row per church member)
 export type Tither = {
   id: string;
   name: string;
-  email?: string;
   phone?: string;
+  department?: string;
+  tithe_card_number?: string;
+  created_at?: string;
+};
+
+// Individual tithe payment — exact date, multiple per month allowed
+export type TitheRecord = {
+  id: string;
+  tither_id: string;
   amount: number;
-  date: string;
-  payment_method: string;
-  bank?: string;
-  reference?: string;
+  date: string;       // "YYYY-MM-DD"
   notes?: string;
   created_at?: string;
 };

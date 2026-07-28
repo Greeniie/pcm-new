@@ -1,4 +1,4 @@
-// File: /Users/user/Documents/pcm-nextjs/app/page.tsx
+// File: /Users/user/Documents/pcm/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
