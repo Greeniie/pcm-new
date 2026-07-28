@@ -15,7 +15,7 @@ function getPrevMonth(month: string): string {
 function calculateStreak(records: TitheRecord[]): number {
   if (!records.length) return 0;
   // Derive unique months from exact dates
-  const months = [...new Set(records.map((r) => r.date.slice(0, 7)))].sort().reverse();
+  const months = Array.from(new Set(records.map((r) => r.date.slice(0, 7)))).sort().reverse();
   let streak = 1, cur = months[0];
   for (let i = 1; i < months.length; i++) {
     if (months[i] === getPrevMonth(cur)) { streak++; cur = months[i]; }
