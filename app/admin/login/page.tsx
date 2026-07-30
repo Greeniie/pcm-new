@@ -7,7 +7,8 @@ import { Eye, EyeOff, LogIn, AlertCircle } from "lucide-react";
 
 // Simple client-side password gate.
 // For production, replace with a real auth system (e.g. NextAuth or Supabase Auth).
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "pcm@admin2025";
+const ADMIN_PASSWORD =
+  process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "pcm@admin2025";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -23,8 +24,8 @@ export default function AdminLoginPage() {
 
     setTimeout(() => {
       if (password === ADMIN_PASSWORD) {
-        // Store a simple session token in sessionStorage
-        sessionStorage.setItem("pcm_admin", "authenticated");
+        // Use a cookie so middleware can check it server-side (eliminates flash)
+        document.cookie = `pcm_admin=authenticated; path=/; SameSite=Strict; Max-Age=${60 * 60 * 24 * 7}`;
         router.push("/admin");
       } else {
         setError("Incorrect password. Please try again.");
@@ -39,10 +40,20 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4 shadow-xl overflow-hidden">
-            <Image src="/images/logo.png" alt="PCM Logo" width={64} height={64} className="object-contain" />
+            <Image
+              src="/images/logo.png"
+              alt="PCM Logo"
+              width={64}
+              height={64}
+              className="object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-white font-display">PCM Admin</h1>
-          <p className="text-white/50 text-sm mt-1">Sign in to manage your website content</p>
+          <h1 className="text-2xl font-bold text-white font-display">
+            PCM Admin
+          </h1>
+          <p className="text-white/50 text-sm mt-1">
+            Sign in to manage your website content
+          </p>
         </div>
 
         <form
@@ -84,7 +95,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-gray-900-DEFAULT text-white font-semibold rounded-xl bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full py-3.5 bg-gray-900-DEFAULT text-white font-semibold rounded-xl hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -96,7 +107,9 @@ export default function AdminLoginPage() {
             )}
           </button>
 
-       
+          <p className="text-xs text-gray-400 text-center mt-4">
+            Default password is set in your <code>.env.local</code> file.
+          </p>
         </form>
       </div>
     </div>

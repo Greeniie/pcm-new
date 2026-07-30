@@ -1,8 +1,3 @@
 {
-  "/sermons/page": "app/sermons/page.js",
-  "/page": "app/page.js",
-  "/about/page": "app/about/page.js",
-  "/admin/tithers/[id]/page": "app/admin/tithers/[id]/page.js",
-  "/admin/content/page": "app/admin/content/page.js",
-  "/admin/tithers/page": "app/admin/tithers/page.js"
+  "/admin/login/page": "app/admin/login/page.js"
 }

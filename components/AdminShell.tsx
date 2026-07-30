@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,29 +17,25 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard",    href: "/admin",          icon: LayoutDashboard },
-  { label: "Services",     href: "/admin/services", icon: Calendar },
-  { label: "Events",       href: "/admin/events",   icon: Star },
-  { label: "Site Content", href: "/admin/content",  icon: FileText },
-  { label: "Tithers",      href: "/admin/tithers",  icon: HandCoins },
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Services", href: "/admin/services", icon: Calendar },
+  { label: "Events", href: "/admin/events", icon: Star },
+  { label: "Site Content", href: "/admin/content", icon: FileText },
+  { label: "Tithers", href: "/admin/tithers", icon: HandCoins },
 ];
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const auth = sessionStorage.getItem("pcm_admin");
-      if (!auth && pathname !== "/admin/login") {
-        router.push("/admin/login");
-      }
-    }
-  }, [pathname, router]);
-
   const handleLogout = () => {
-    sessionStorage.removeItem("pcm_admin");
+    // Clear the cookie — middleware will redirect on next request
+    document.cookie = "pcm_admin=; path=/; Max-Age=0";
     router.push("/admin/login");
   };
 
@@ -54,7 +50,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-6 border-b border-white/10">
           <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white/10">
-            <Image src="/images/logo.png" alt="PCM Logo" width={36} height={36} className="object-contain" />
+            <Image
+              src="/images/logo.png"
+              alt="PCM Logo"
+              width={36}
+              height={36}
+              className="object-contain"
+            />
           </div>
           <div>
             <p className="text-white font-bold text-sm">PCM Admin</p>
@@ -130,7 +132,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               {navItems.find(
                 (n) =>
                   n.href === pathname ||
-                  (n.href !== "/admin" && pathname.startsWith(n.href))
+                  (n.href !== "/admin" && pathname.startsWith(n.href)),
               )?.label ?? "Dashboard"}
             </h1>
             <p className="text-xs text-gray-500">
