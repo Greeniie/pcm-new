@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-gray-900-DEFAULT text-white font-semibold rounded-xl hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full py-3.5 bg-gray-900-DEFAULT text-white font-semibold rounded-xl bg-gray-700 hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -107,9 +107,7 @@ export default function AdminLoginPage() {
             )}
           </button>
 
-          <p className="text-xs text-gray-400 text-center mt-4">
-            Default password is set in your <code>.env.local</code> file.
-          </p>
+  
         </form>
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function AdminDashboard() {
           <div className="relative">
             <h2 className="text-2xl font-bold mb-2">Welcome to PCM Admin</h2>
             <p className="text-white/70 max-w-md">
-              Changes save directly to Supabase and go live immediately.
+              Changes are saved and go live immediately.
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
         </div>
 
         <p className="text-xs text-gray-400 text-center pb-4">
-          PCM Admin · Powered by Supabase
+          PCM Admin
         </p>
       </div>
     </AdminShell>
